@@ -48,6 +48,7 @@ function Environment:_init(bounds)
     self.cube.hasCollider = true
 
     self.ambientLight = {0, 0, 0}
+    self.skybox = nil
     self:addSubview(self.cube)
 end
 
@@ -60,6 +61,9 @@ function Environment:specification()
             }
         }
     }
+    if self.skybox then
+        spec.environment.skybox = self.skybox
+    end
     return spec
 end
 
@@ -117,6 +121,45 @@ function slider(text, x, y, parent, func, min, max)
 end
 
 local stack = VerticalStackView({pose=Pose(0,0,0.01), size=mainView.bounds.size:copy()})
+
+-- Skyboxes
+local skyboxes = {
+    sunset = {
+        left = ui.Asset.File('images/skybox/sunset/left.png'),
+        right = ui.Asset.File('images/skybox/sunset/right.png'),
+        top = ui.Asset.File('images/skybox/sunset/top.png'),
+        bottom = ui.Asset.File('images/skybox/sunset/bottom.png'),
+        back = ui.Asset.File('images/skybox/sunset/back.png'),
+        front = ui.Asset.File('images/skybox/sunset/front.png'),
+    },
+    sakura = {
+        left = ui.Asset.File('images/skybox/sakura/left.png'),
+        right = ui.Asset.File('images/skybox/sakura/right.png'),
+        top = ui.Asset.File('images/skybox/sakura/top.png'),
+        bottom = ui.Asset.File('images/skybox/sakura/bottom.png'),
+        back = ui.Asset.File('images/skybox/sakura/back.png'),
+        front = ui.Asset.File('images/skybox/sakura/front.png'),
+    }
+}
+app.assetManager:add(skyboxes.sunset, true)
+app.assetManager:add(skyboxes.sakura, true)
+
+local function skyboxButton(name)
+    local button = ui.Button()
+    button.label:setText("Set skybox to " .. name)
+    button.onActivated = function ()
+        local box = {}
+        for side,asset in pairs(skyboxes[name]) do
+            box[side] = asset:id()
+        end
+        env.skybox = box
+        env:updateComponents()
+    end
+    return button
+end
+
+stack:addSubview(skyboxButton("sunset"))
+stack:addSubview(skyboxButton("sakura"))
 
 stack:addSubview(Label({
     bounds = Bounds(0,0,0, 0,0.1,0),
