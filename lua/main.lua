@@ -21,7 +21,7 @@ app.assetManager:add(assets)
 -- 0, 1.2, -2 means: put the app centered horizontally; 1.2 meters up from the floor; and 2 meters into the room, depth-wise
 -- 1, 0.5, 0.01 means 1 meter wide, 0.5 meters tall, and 1 cm deep.
 -- It's a surface, so the depth should be close to zero.
-local mainView = ui.Surface(ui.Bounds(0, 1.2, -2,   3, 0.5, 0.01))
+local mainView = ui.Surface(ui.Bounds(0, 0.5, -2,   3, 0.5, 0.01))
 
 -- Make it so that the grab button or right mouse button moves lets user move the view.
 -- Instead of making mainView grabbable, you could also create a ui.GrabHandle and add it
@@ -42,14 +42,14 @@ class.Environment(View)
 function Environment:_init(bounds)
     bounds = bounds or Bounds(0,0,0,10,10,10)
     self:super(bounds)
-    self.cube = Cube(Bounds({size = self.bounds.size:copy(), pose = Pose()}))
-    self.cube:setColor({1, 1, 1, 0.1})
-    self.bounds.size = self.cube.bounds.size
-    self.cube.hasCollider = true
+    self.effectCube = Cube(Bounds({size = self.bounds.size:copy(), pose = Pose()}))
+    self.effectCube:setColor({1, 1, 1, 0.1})
+    self.bounds.size = self.effectCube.bounds.size
+    -- self.effectCube.hasCollider = true
 
     self.ambientLight = {0, 0, 0}
     self.skybox = nil
-    self:addSubview(self.cube)
+    -- self:addSubview(self.effectCube)
 end
 
 function Environment:specification()
@@ -68,6 +68,8 @@ function Environment:specification()
 end
 
 local env = Environment()
+
+local applySettings = nil
 
 
 function slider(text, x, y, parent, func, min, max)
@@ -120,7 +122,7 @@ function slider(text, x, y, parent, func, min, max)
     return v, s, l
 end
 
-local stack = VerticalStackView({pose=Pose(0,0,0.01), size=mainView.bounds.size:copy()})
+local stack = StackView({pose=Pose(0,0,0.01), size=mainView.bounds.size:copy()})
 
 -- Skyboxes
 local skyboxes = {
@@ -144,9 +146,13 @@ local skyboxes = {
 app.assetManager:add(skyboxes.sunset, true)
 app.assetManager:add(skyboxes.sakura, true)
 
+local skystack = StackView(Bounds(0,0,0, 0.2, 0.5, 0), "h")
+
+
 local function skyboxButton(name)
-    local button = ui.Button()
-    button.label:setText("Set skybox to " .. name)
+    local button = ui.Button(Bounds(0,0,0, 0.5,0.5,0.1))
+    button:setTexture(skyboxes[name].front)
+    button.label:setText(name)
     button.onActivated = function ()
         local box = {}
         for side,asset in pairs(skyboxes[name]) do
@@ -158,8 +164,10 @@ local function skyboxButton(name)
     return button
 end
 
-stack:addSubview(skyboxButton("sunset"))
-stack:addSubview(skyboxButton("sakura"))
+skystack:addSubview(skyboxButton("sunset"))
+skystack:addSubview(skyboxButton("sakura"))
+skystack:layout()
+stack:addSubview(skystack)
 
 stack:addSubview(Label({
     bounds = Bounds(0,0,0, 0,0.1,0),
@@ -167,38 +175,52 @@ stack:addSubview(Label({
     halign = "right",
 }))
 local r, g, b
+local max = 1
 slider("RGB", 0, 0, stack, function(value, v)
     for i, slider in ipairs({r.slider, g.slider, b.slider}) do
         slider:currentValue(value)
-        -- local color = slider.color or {0,0,0,1}
-        -- color[i] = value/slider:maxValue()
-        -- slider.track:setColor(color)
     end
-end, 0, 0.2)
+    applySettings()
+end, 0, max)
 r = slider("Red", 0, 0, stack, function (value, v)
     v.slider.track:setColor({value/v.slider:maxValue(), 0, 0, 1})
-end, 0, 0.2)
+    applySettings()
+end, 0, max)
 g = slider("Green", 0, 0, stack, function (value, v)
     v.slider.track:setColor({0, value/v.slider:maxValue(), 0, 1})
-end, 0, 0.2)
+    applySettings()
+end, 0, max)
 b = slider("Blue", 0, 0, stack, function (value, v)
     v.slider.track:setColor({0, 0, value/v.slider:maxValue(), 1})
-end, 0, 0.2)
+    applySettings()
+end, 0, max)
 
 local button = Button()
 button.label:setText("Apply")
 button.onActivated = function ()
-    env.ambientLight = { r.slider:currentValue(), g.slider:currentValue(), b.slider:currentValue() }
-    env:updateComponents()
+    
 end
 stack:addSubview(button)
 
 stack:layout()
+mainView.bounds.pose:move(0, -(mainView.bounds.size.height - stack.bounds.size.height) / 2, 0)
+mainView.bounds.size.height = stack.bounds.size.height
 mainView:addSubview(stack)
 mainView:addSubview(env)
 
 -- Tell the app that mainView is the primary UI for this app
 app.mainView = mainView
+
+applySettings = function()
+    local color = { r.slider:currentValue(), g.slider:currentValue(), b.slider:currentValue() }
+    env.ambientLight = color
+    r.slider.track:setColor({color[1], 0, 0})
+    g.slider.track:setColor({0, color[2], 0})
+    b.slider.track:setColor({0, 0, color[3]})
+    env:updateComponents()
+end
+
+button.onActivated()
 
 -- Connect to the designated remote Place server
 app:connect()
