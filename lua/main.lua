@@ -141,18 +141,31 @@ local skyboxes = {
         bottom = ui.Asset.File('images/skybox/sakura/bottom.png'),
         back = ui.Asset.File('images/skybox/sakura/back.png'),
         front = ui.Asset.File('images/skybox/sakura/front.png'),
+    },
+    blueishnight = {
+      left = ui.Asset.File('images/skybox/blueish-night/left.png'),
+      right = ui.Asset.File('images/skybox/blueish-night/right.png'),
+      top = ui.Asset.File('images/skybox/blueish-night/top.png'),
+      bottom = ui.Asset.File('images/skybox/blueish-night/bottom.png'),
+      back = ui.Asset.File('images/skybox/blueish-night/back.png'),
+      front = ui.Asset.File('images/skybox/blueish-night/front.png'),
     }
 }
 app.assetManager:add(skyboxes.sunset, true)
 app.assetManager:add(skyboxes.sakura, true)
+app.assetManager:add(skyboxes.blueishnight, true)
 
 local skystack = StackView(Bounds(0,0,0, 0.2, 0.5, 0), "h")
 
 
 local function skyboxButton(name)
     local button = ui.Button(Bounds(0,0,0, 0.5,0.5,0.1))
+
+    local buttonLabel = Label{bounds=Bounds(0, -0.25, 0.101, 0.4, 0.1, 0.001), color={1.0,1.0,1.0,1}, text=name, halign="center", valign="bottom", fitToWidth=0.4}
+    button:addSubview(buttonLabel)
+
     button:setTexture(skyboxes[name].front)
-    button.label:setText(name)
+    --button.label:setText(name)
     button.onActivated = function ()
         local box = {}
         for side,asset in pairs(skyboxes[name]) do
@@ -166,6 +179,7 @@ end
 
 skystack:addSubview(skyboxButton("sunset"))
 skystack:addSubview(skyboxButton("sakura"))
+skystack:addSubview(skyboxButton("blueishnight"))
 skystack:layout()
 stack:addSubview(skystack)
 

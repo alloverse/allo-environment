@@ -4,3 +4,5 @@ allo/**/*.bundle
 allo/**/*.so
 allo/**/allonet.cache
 allo/**/builds.json
+images/.DS_Store
+images/skybox/.DS_Store
