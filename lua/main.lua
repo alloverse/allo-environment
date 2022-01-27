@@ -149,11 +149,20 @@ local skyboxes = {
       bottom = ui.Asset.File('images/skybox/blueish-night/bottom.png'),
       back = ui.Asset.File('images/skybox/blueish-night/back.png'),
       front = ui.Asset.File('images/skybox/blueish-night/front.png'),
+    },
+    daylight = {
+        left = ui.Asset.File('images/skybox/daylight/left.png'),
+        right = ui.Asset.File('images/skybox/daylight/right.png'),
+        top = ui.Asset.File('images/skybox/daylight/top.png'),
+        bottom = ui.Asset.File('images/skybox/daylight/bottom.png'),
+        back = ui.Asset.File('images/skybox/daylight/back.png'),
+        front = ui.Asset.File('images/skybox/daylight/front.png'),
     }
 }
 app.assetManager:add(skyboxes.sunset, true)
 app.assetManager:add(skyboxes.sakura, true)
 app.assetManager:add(skyboxes.blueishnight, true)
+app.assetManager:add(skyboxes.daylight, true)
 
 local skystack = StackView(Bounds(0,0,0, 0.2, 0.5, 0), "h")
 
@@ -180,6 +189,7 @@ end
 skystack:addSubview(skyboxButton("sunset"))
 skystack:addSubview(skyboxButton("sakura"))
 skystack:addSubview(skyboxButton("blueishnight"))
+skystack:addSubview(skyboxButton("daylight"))
 skystack:layout()
 stack:addSubview(skystack)
 
